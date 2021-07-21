@@ -1,0 +1,53 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  myshared-libraries layer
+
+Resources:
+  AttachLambdaLayerCustomResource:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: cfn-attach-lambda-layer
+      CodeUri: ./custom-resources/attach_lambda_layer
+      Handler: lambda_handler.handler
+      Runtime: python3.7
+      Role: !GetAtt AttachLambdaLayeCustomResourceRole.Arn
+
+  AttachLambdaLayeCustomResourceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName:
+          Fn::Sub: updater-lambda-configuration-policy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:GetFunction
+            - lambda:GetFunctionConfiguration
+            - lambda:UpdateFunctionConfiguration
+            - lambda:GetLayerVersion
+            - lambda:ListLayerVersions
+            - logs:DescribeLogGroups
+            - logs:CreateLogGroup
+            Resource: "*"
+
+Outputs:
+  CFNAttachLambdaLayer:
+    Value: !GetAtt  AttachLambdaLayerCustomResource.Arn
+    Export:
+      Name: CFNAttachLambdaLayer
