@@ -21,7 +21,7 @@ From the command line, run:
 
 ```bash
 sam build -t ./cfn_attach_lambda_layer.yml
-sam deploy  --template-file .aws-sam/build/template.yaml --stack-name cfn_attach_lambda_layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3
+sam deploy  --template-file .aws-sam/build/template.yaml --stack-name cfn-attach-lambda-layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3
 ```
 
 This will deploy an AWS Lambda custom resource that can be called by your CloudFormation template.
