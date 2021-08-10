@@ -21,7 +21,7 @@ From the command line, run:
 
 ```bash
 sam build -t ./cfn_attach_lambda_layer.yml
-sam deploy  --template-file .aws-sam/build/template.yaml --stack-name cfn-attach-lambda-layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3
+sam deploy  --template-file .aws-sam/build/template.yaml --stack-name cfn-attach-lambda-layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3 --parameter-overrides Nonce="$(date +%s)" 
 ```
 
 This will deploy an AWS Lambda custom resource that can be called by your CloudFormation template.
@@ -29,10 +29,18 @@ This will deploy an AWS Lambda custom resource that can be called by your CloudF
 ## Usage
 
 ```yaml
+Parameters:
+  Nonce:
+    Type: String
+    Description: Forces custom resource to run everytime CF runs -- pass in a $RANDOM as a parameter
+
   AttachLayer:
     Type: Custom::LayerAttachment
     Properties:
       LayerName: <Your Layer name>
       LambdaName: <Lambda name or ARN>
+      #CloudFormation will not execute the custom resource if no properties are changed.
+      #Along with the parameter, this ensures that the resource is called each time CloudFormation runs
+      Nonce: !Ref Nonce
       ServiceToken: !ImportValue CFNAttachLambdaLayer
 ```
