@@ -1,2 +1,4 @@
 sample.yml
 .aws-sam
+samconfig.toml
+.DS_Store

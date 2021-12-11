@@ -13,15 +13,15 @@ It will attach the latest version of the Layer to the specified Lambda.
 
 - The [AWS CLI](https://www.python.org/downloads/)
 - The [AWS Serverless Application Model](https://docs.aws.amazon.com/serverless-application-model/index.html) must be [installed](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- [Python 3.7](https://www.python.org/downloads/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
 ## Deploying CFNAttachLambdaLayer
 
 From the command line, run:
 
 ```bash
-sam build -t ./cfn_attach_lambda_layer.yml
-sam deploy  --template-file .aws-sam/build/template.yaml --stack-name cfn-attach-lambda-layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3 --parameter-overrides Nonce="$(date +%s)" 
+sam build  --use-container
+sam deploy  --stack-name cfn-attach-lambda-layer  --capabilities "CAPABILITY_NAMED_IAM" --resolve-s3 
 ```
 
 This will deploy an AWS Lambda custom resource that can be called by your CloudFormation template.
@@ -41,6 +41,8 @@ Parameters:
       LambdaName: <Lambda name or ARN>
       #CloudFormation will not execute the custom resource if no properties are changed.
       #Along with the parameter, this ensures that the resource is called each time CloudFormation runs
+      #If using sam deploy, you can specify:
+      #  --parameter-overrides Nonce="$(date +%s)" 
       Nonce: !Ref Nonce
       ServiceToken: !ImportValue CFNAttachLambdaLayer
 ```

@@ -6,6 +6,7 @@
 import boto3
 import cfnresponse
 import functools
+import time
 
 
 def handler(event, context):
@@ -21,7 +22,19 @@ def handler(event, context):
             # Find the latest version of the Lambda layer specified
             layer_versions = lambda_client.list_layer_versions(LayerName=layer_name)
             max_version = functools.reduce(lambda x, y: x if x["Version"] > y["Version"] else y, layer_versions["LayerVersions"])
-            
+            while True:
+                lambda_configuration = lambda_client.get_function(FunctionName=lambda_name)
+                state = lambda_configuration["Configuration"]["LastUpdateStatus"]
+                print(lambda_configuration)
+                if state == "InProgress":
+                     time.sleep(5)
+                elif state != "Successful":
+                     raise Exception(f"Last update for the function ${lambda_name} failed.")
+                else:
+                    break
+
+
+
             # Retrieve all of the existing Lambda layers of the Lambda
             # and remove the one we want to update if it exists.
             lambda_configuration = lambda_client.get_function_configuration(FunctionName=lambda_name)
@@ -39,6 +52,13 @@ def handler(event, context):
             responseValue = 120
             responseData['Data'] = responseValue
             cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+            while True:
+                lambda_configuration = lambda_client.get_function_configuration(FunctionName=lambda_name)
+                if lambda_configuration["LastUpdateStatus"] == "InProgress":
+                     time.sleep(5)
+                elif lambda_configuration["LastUpdateStatus"] == "Failed":
+                     raise Exception(f"Last update for the function ${lambda_name} failed.")
+                break
 
         else:
             cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
